@@ -51,27 +51,23 @@ export interface ILogicalGraphConverter {
   put_vertex(answer_index: number, vertex: DataVertex, queryVertex: QueryVertex): void;
 
   // Edges
-  put_isa(answer_index: number, constraint: DataConstraintIsa, thing: Entity | Relation | Attribute | VertexUnavailable, type: InstantiableType | VertexUnavailable): void;
+  put_isa(answer_index: number, constraint: DataConstraintIsa): void;
 
-  put_has(answer_index: number, constraint: DataConstraintHas, owner: Entity | Relation | VertexUnavailable, attribute: Attribute | VertexUnavailable): void;
+  put_has(answer_index: number, constraint: DataConstraintHas): void;
 
-  put_links(answer_index: number, constraint: DataConstraintLinks, relation: Relation | VertexUnavailable, player: Entity | Relation | VertexUnavailable, role: RoleType | VertexUnavailable): void;
+  put_links(answer_index: number, constraint: DataConstraintLinks): void;
 
-  put_sub(answer_index: number, constraint: DataConstraintSub, subtype: EntityType | RelationType | AttributeType | RoleType |VertexUnavailable, supertype: EntityType | RelationType | AttributeType | RoleType | VertexUnavailable): void;
+  put_sub(answer_index: number, constraint: DataConstraintSub): void;
 
-  put_owns(answer_index: number, constraint: DataConstraintOwns, owner: EntityType | RelationType | VertexUnavailable, attribute: AttributeType | VertexUnavailable): void;
+  put_owns(answer_index: number, constraint: DataConstraintOwns): void;
 
-  put_relates(answer_index: number, constraint: DataConstraintRelates, relation: RelationType | VertexUnavailable, role: RoleType | VertexUnavailable): void;
+  put_relates(answer_index: number, constraint: DataConstraintRelates): void;
 
-  put_plays(answer_index: number, constraint: DataConstraintPlays, player: EntityType | RelationType | VertexUnavailable, role: RoleType | VertexUnavailable): void;
+  put_plays(answer_index: number, constraint: DataConstraintPlays): void;
 
-  put_isa_exact(answer_index: number, constraint: DataConstraintIsa, thing: Entity | Relation | Attribute | VertexUnavailable, type: EntityType | RelationType | AttributeType | VertexUnavailable): void;
+  put_expression(answer_index: number, constraint: DataConstraintExpression): void;
 
-  put_sub_exact(answer_index: number, constraint: DataConstraintSub, subtype: EntityType | RelationType | AttributeType | VertexUnavailable, supertype: EntityType | RelationType | AttributeType | VertexUnavailable): void;
-
-  put_expression(answer_index: number, constraint: DataConstraintExpression, assigned: { data: (Value | VertexUnavailable), variable: string }, args: { data: (Value | Attribute | VertexUnavailable), variable: string }[]): void;
-
-  put_function(answer_index: number, constraint: DataConstraintFunction, assigned: { data: (Entity | Relation | Attribute | Value | VertexUnavailable), variable: string }, args: { data: (Entity | Relation | Attribute | Value | VertexUnavailable), variable: string }[]): void;
+  put_function(answer_index: number, constraint: DataConstraintFunction): void;
 }
 
 export function convertLogicalGraphWith(dataGraph: DataGraph, converter: ILogicalGraphConverter) {

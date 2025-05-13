@@ -105,10 +105,10 @@ export class GraphVisualiser {
     colorQuery(queryString: string, queryStructure: QueryStructure): string {
         let spans: number[][] = [];
         queryStructure.branches.forEach(branch => {
-            branch.edges.forEach((edge, constraintIndex) => {
-                if (shouldCreateEdge(edge)) {
-                    if (edge.span != null) {
-                        spans.push([edge.span.begin, edge.span.end, constraintIndex]);
+            branch.constraints.forEach((constraint, constraintIndex) => {
+                if (shouldCreateEdge(constraint)) {
+                    if (constraint.span != null) {
+                        spans.push([constraint.span.begin, constraint.span.end, constraintIndex]);
                     }
                 }
             })
@@ -136,7 +136,6 @@ export class GraphVisualiser {
             }
             highlighted += (queryString[i] == "\n") ? "<br/>": queryString[i];
         }
-        console.log(highlighted);
         return highlighted;
     }
 
