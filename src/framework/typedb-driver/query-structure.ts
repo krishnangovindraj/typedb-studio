@@ -5,6 +5,7 @@
  */
 
 import { EdgeKind, TypeKind, Value } from "./concept";
+import {DataConstraintSpan} from "../graph-visualiser/graph";
 
 export type QueryVertexKind = "variable" | "label" | "value" | "unavailableVariable" | "expression" | "functionCall";
 
@@ -52,94 +53,94 @@ export type QueryConstraintExactness = "exact" | "subtypes";
 // Instance
 export interface QueryConstraintIsa {
     kind: "isa",
+    span: QueryConstraintSpan,
     constraint: {
         instance: QueryVertexVariable | QueryVertexUnavailable,
         type: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 export interface QueryConstraintHas {
     kind: "has",
+    span: QueryConstraintSpan,
     constraint: {
         owner: QueryVertexVariable| QueryVertexUnavailable
         attribute: QueryVertexVariable | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     },
 }
 
 
 export interface QueryConstraintLinks {
     kind: "links",
+    span: QueryConstraintSpan,
     constraint: {
         relation: QueryVertexVariable | QueryVertexUnavailable,
         player: QueryVertexVariable | QueryVertexUnavailable,
         role: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 // Type
 export interface QueryConstraintSub {
     kind: "sub",
+    span: QueryConstraintSpan,
     constraint: {
         subtype: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         supertype: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 export interface QueryConstraintOwns {
     kind: "owns",
+    span: QueryConstraintSpan,
     constraint: {
         owner: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         attribute: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 export interface QueryConstraintRelates {
     kind: "relates",
+    span: QueryConstraintSpan,
     constraint: {
         relation: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         role: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 export interface QueryConstraintPlays {
     kind: "plays",
+    span: QueryConstraintSpan,
     constraint: {
         player: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         role: QueryVertexVariable | QueryVertexLabel | QueryVertexUnavailable,
         exactness: QueryConstraintExactness,
-        span: QueryConstraintSpan,
     }
 }
 
 // Function
 export interface QueryConstraintExpression {
     kind: "expression",
+    span: QueryConstraintSpan,
     constraint: {
         text: string,
         arguments: (QueryVertexVariable| QueryVertexUnavailable)[],
         assigned: (QueryVertexVariable| QueryVertexUnavailable)[],
-        span: QueryConstraintSpan,
     }
 }
 
 export interface QueryConstraintFunction {
-    kind: "function",
+    kind: "functionCall",
+    span: QueryConstraintSpan,
     constraint: {
         name: string,
-        arguments: (QueryVertexVariable | QueryVertexValue | QueryVertexUnavailable)[],
+        arguments: (QueryVertexVariable | QueryVertexUnavailable)[],
         assigned: (QueryVertexVariable | QueryVertexUnavailable)[],
-        span: QueryConstraintSpan,
     }
 }

@@ -42,6 +42,7 @@ import {
 import {ILogicalGraphConverter} from "./visualisation";
 import {StudioConverterStructureParameters, StudioConverterStyleParameters} from "./config";
 
+type QueryVertexOrSpecial = QueryVertex | VertexFunction | VertexExpression;
 export class StudioConverter implements ILogicalGraphConverter {
 
     constructor(
@@ -99,13 +100,37 @@ export class StudioConverter implements ILogicalGraphConverter {
         return `${from_id}:${to_id}:${edge_type_id}`;
     }
 
-    private maybeCreateEdge(answerIndex: number, edge: DataConstraintAny, label: string, from: DataVertex, to: DataVertex, queryFrom: QueryVertex, queryTo: QueryVertex) {
+    private shouldCreateNode(vertex: DataVertex, queryVertex: QueryVertexOrSpecial) {
+        return shouldCreateNode(queryVertex);
+    }
+
+    private shouldCreateEdge(edge: DataConstraintAny, from: QueryVertexOrSpecial, to: QueryVertexOrSpecial) {
+        return shouldCreateEdge(edge.queryConstraint, from, to);
+    }
+
+    private createVertex(key: string, attributes: VertexAttributes) {
+        if (!this.graph.hasNode(key))  {
+            this.graph.addNode(key, attributes);
+        }
+    }
+
+    private createEdge(edgeKey: string, from: string, to: string, attributes: EdgeAttributes) {
+        if (!this.graph.hasDirectedEdge(edgeKey)) {
+            // TODO: If there is an edge between the two vertices, make it curved
+            if (this.graph.hasDirectedEdge(from, to)) {
+                attributes.type = "curved";
+            }
+            this.graph.addDirectedEdgeWithKey(edgeKey, from, to, attributes);
+        }
+    }
+
+    private maybeCreateEdge(answerIndex: number, edge: DataConstraintAny, label: string, from: DataVertex, to: DataVertex, queryFrom: QueryVertexOrSpecial, queryTo: QueryVertexOrSpecial) {
         if (this.shouldCreateEdge(edge, queryFrom, queryTo)) {
             let fromKey = this.put_vertex(answerIndex, from, queryFrom);
             let toKey = this.put_vertex(answerIndex, to, queryTo);
             let edgeKey = this.edgeKey(fromKey, toKey, label);
-            const attributes = this.edgeAttributes("isa", this.edgeMetadata(answerIndex, edge));
-            this.createEdge(edgeKey, from, to, attributes);
+            const attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
+            this.createEdge(edgeKey, fromKey, toKey, attributes);
         } else {
             if (this.shouldCreateNode(from, queryFrom)) {
                 this.put_vertex(answerIndex, from, queryFrom);
@@ -118,10 +143,10 @@ export class StudioConverter implements ILogicalGraphConverter {
 
     // ILogicalGraphConverter
     // Vertices
-    put_vertex(answerIndex: number, vertex: DataVertex, queryVertex: QueryVertex): string {
+    put_vertex(answerIndex: number, vertex: DataVertex, queryVertex: QueryVertexOrSpecial): string {
         const key = vertexMapKey(vertex);
-        if (this.shouldCreateNode(vertex, queryVertex) && !this.graph.hasNode(key))  {
-            this.graph.addNode(key, this.vertexAttributes(vertex));
+        if (this.shouldCreateNode(vertex, queryVertex)) {
+            this.createVertex(key, this.vertexAttributes(vertex))
         }
         return key;
     }
@@ -179,103 +204,54 @@ export class StudioConverter implements ILogicalGraphConverter {
 
     put_expression(answerIndex: number, constraint: DataConstraintExpression): void {
         let expression = constraint.constraint;
-        let expressionVertexKey = `expr_${answerIndex}_${constraint.queryCoordinates.branch}_{${constraint.queryCoordinates.constraint}}`;
-        let expressionVertex: VertexExpression = {  kind: "expression", answerIndex: answerIndex, repr: constraint.constraint.text, vertex_map_key: expressionVertexKey}
+        let expressionVertex: VertexExpression = {
+            kind: "expression",
+            answerIndex: answerIndex,
+            repr: constraint.constraint.text,
+            vertex_map_key: `expr_${answerIndex}_${constraint.queryCoordinates.branch}_{${constraint.queryCoordinates.constraint}}`
+        }
         expression.assigned
             .forEach((assigned, i) => {
                 let queryVertex = constraint.queryConstraint.constraint.assigned[i];
-                if (this.shouldCreateNode(assigned, queryVertex)) {
-                    let label = `assign[${queryVertex.value.variable}]`;
-                    let assignedKey = this.put_vertex(answerIndex, assigned, queryVertex);
-                    let edgeKey = this.edgeKey(expressionVertexKey, assignedKey, label);
-                    this.createEdge(edgeKey, expressionVertex, assigned, this.edgeAttributes(label, this.edgeMetadata(answerIndex, constraint)));
-                }
+                let label = `assign[${queryVertex.value.variable}]`;
+                this.maybeCreateEdge(answerIndex, constraint, label, expressionVertex, assigned, expressionVertex, queryVertex);
             });
         expression.arguments
             .forEach((arg, i) => {
                 let queryVertex = constraint.queryConstraint.constraint.arguments[i];
-                if (this.shouldCreateNode(arg, queryVertex)) {
-                    let label = `arg[${queryVertex.value.variable}]`;
-                    let argKey = this.put_vertex(answerIndex, arg, queryVertex);
-                    let edgeKey = this.edgeKey(expressionVertexKey, argKey, label);
-                    this.createEdge(edgeKey, expressionVertex, arg, this.edgeAttributes(label, this.edgeMetadata(answerIndex, constraint)));
-                }
+                let label = `arg[${queryVertex.value.variable}]`;
+                this.maybeCreateEdge(answerIndex, constraint, label, arg, expressionVertex, queryVertex, expressionVertex);
             });
     }
 
     put_function(answerIndex: number, constraint: DataConstraintFunction): void {
         let functionCall = constraint.constraint;
         let functionVertexKey = `f_${answerIndex}_${constraint.queryCoordinates.branch}_{${constraint.queryCoordinates.constraint}}`;
-        let functionVertex: VertexFunction = {  kind: "functionCall", answerIndex: answerIndex, repr: constraint.constraint.name, vertex_map_key: functionVertexKey}
+        let functionVertex: VertexFunction = {
+            kind: "functionCall", answerIndex: answerIndex,
+            repr: constraint.constraint.name,
+            vertex_map_key: functionVertexKey
+        }
         functionCall.assigned
             .forEach((assigned, i) => {
                 let queryVertex = constraint.queryConstraint.constraint.assigned[i];
-                if (this.shouldCreateNode(assigned, queryVertex)) {
-                    let label = `assign[${queryVertex.value.variable}]`;
-                    let assignedKey = this.put_vertex(answerIndex, assigned, queryVertex);
-                    let edgeKey = this.edgeKey(functionVertexKey, assignedKey, label);
-                    this.createEdge(edgeKey, functionVertex, assigned, this.edgeAttributes(label, this.edgeMetadata(answerIndex, constraint)));
-                }
+                let label = `assign[${queryVertex.value.variable}]`;
+                this.maybeCreateEdge(answerIndex, constraint, label, functionVertex, assigned, functionVertex, queryVertex);
             });
         functionCall.arguments
             .forEach((arg, i) => {
                 let queryVertex = constraint.queryConstraint.constraint.arguments[i];
-                if (queryVertex.kind != "value" && this.shouldCreateNode(arg, queryVertex)) {
-                    let label = `arg[${queryVertex.value.variable}]`;
-                    let argKey = this.put_vertex(answerIndex, arg, queryVertex);
-                    let edgeKey = this.edgeKey(functionVertexKey, argKey, label);
-                    this.createEdge(edgeKey, functionVertex, arg, this.edgeAttributes(label, this.edgeMetadata(answerIndex, constraint)));
-                }
+                let label = `arg[${queryVertex.value.variable}]`;
+                this.maybeCreateEdge(answerIndex, constraint, label, arg, functionVertex, queryVertex, functionVertex);
             });
-    }
-
-    // put_assigned(answerIndex: number, constraint: DataConstraint?): void {
-    //     let label = "assign[" + var_name + "]";
-    //     let attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
-    //     this.maybeCreateEdge(edge, expr_or_func.vertex_map_key, vertexMapKey(assigned), "assigned", attributes);
-    // }
-    //
-    // put_argument(answerIndex: number, constraint: DataConstraint?): void {
-    //     const label = `arg[${var_name}]`;
-    //     const attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
-    //     let from_vertex_key = null;
-    //     switch (argument.kind) {
-    //         case "value": {
-    //             from_vertex_key = vertexMapKey(argument);
-    //             break;
-    //         }
-    //         case "attribute": {
-    //             from_vertex_key = vertexMapKey(argument);
-    //             break;
-    //         }
-    //     }
-    //     this.maybeCreateEdge(edge, from_vertex_key, expr_or_func.vertex_map_key, "argument", attributes);
-    // }
-
-    private shouldCreateNode(vertex: DataVertex, queryVertex: QueryVertex) {
-        return shouldCreateNode(queryVertex);
-    }
-
-    private shouldCreateEdge(edge: DataConstraintAny, from: QueryVertex, to: QueryVertex) {
-        return shouldCreateEdge(edge.queryConstraint, from, to);
-    }
-
-    private createEdge(edgeKey: string, from: DataVertex, to: DataVertex, attributes: EdgeAttributes) {
-        if (!this.graph.hasDirectedEdge(edgeKey)) {
-            // TODO: If there is an edge between the two vertices, make it curved
-            if (this.graph.hasDirectedEdge(from, to)) {
-                attributes.type = "curved";
-            }
-            this.graph.addDirectedEdgeWithKey(edgeKey, from, to, attributes);
-        }
     }
 }
 
-export function shouldCreateNode(vertex: QueryVertex) {
+export function shouldCreateNode(vertex: QueryVertexOrSpecial) {
     return !["unavailableVariable", "label"].includes(vertex.kind);
 }
 
-export function shouldCreateEdge(_edge: QueryConstraintAny, from: QueryVertex, to: QueryVertex) {
+export function shouldCreateEdge(_edge: QueryConstraintAny, from: QueryVertexOrSpecial, to: QueryVertexOrSpecial) {
     return shouldCreateNode(from) && shouldCreateNode(to);
 }
 

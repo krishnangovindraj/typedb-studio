@@ -2,7 +2,7 @@ import MultiGraph from "graphology";
 import Sigma from "sigma";
 import ForceSupervisor from "graphology-layout-force/worker";
 import { Settings as SigmaSettings } from "sigma/settings";
-import { QueryStructure } from "../typedb-driver/query-structure";
+import {QueryConstraintAny, QueryStructure} from "../typedb-driver/query-structure";
 import { ApiResponse, isApiErrorResponse, QueryResponse } from "../typedb-driver/response";
 import { StudioConverterStructureParameters, StudioConverterStyleParameters } from "./config";
 
@@ -12,7 +12,7 @@ import {InteractionHandler} from "./interaction";
 import { convertLogicalGraphWith } from "./visualisation";
 import {LayoutWrapper} from "./layouts";
 import chroma from "chroma-js";
-import { shouldCreateEdge, StudioConverter } from "./converter";
+import {shouldCreateEdge, shouldCreateNode, StudioConverter} from "./converter";
 
 export interface StudioState {
     activeQueryDatabase: string | null;
@@ -103,10 +103,36 @@ export class GraphVisualiser {
     }
 
     colorQuery(queryString: string, queryStructure: QueryStructure): string {
+        function shouldColourConstraint(constraint: QueryConstraintAny): boolean {
+            switch (constraint.kind) {
+                case "isa": return shouldCreateEdge(constraint, constraint.constraint.instance, constraint.constraint.type);
+                case "has":  return shouldCreateEdge(constraint, constraint.constraint.owner, constraint.constraint.attribute);
+                case "links":
+                    return shouldCreateEdge(constraint, constraint.constraint.relation, constraint.constraint.player);
+                case "sub":
+                    return shouldCreateEdge(constraint, constraint.constraint.subtype, constraint.constraint.supertype);
+                case "owns":
+                    return shouldCreateEdge(constraint, constraint.constraint.owner, constraint.constraint.attribute);
+                case "relates":
+                    return shouldCreateEdge(constraint, constraint.constraint.relation, constraint.constraint.role);
+                case "plays":
+                    return shouldCreateEdge(constraint, constraint.constraint.player, constraint.constraint.role);
+                case "expression":
+                    return (
+                        constraint.constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
+                        || constraint.constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
+                    );
+                case "functionCall":
+                    return (
+                        constraint.constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
+                        || constraint.constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
+                    );
+            }
+        }
         let spans: number[][] = [];
         queryStructure.branches.forEach(branch => {
             branch.constraints.forEach((constraint, constraintIndex) => {
-                if (shouldCreateEdge(constraint)) {
+                if (shouldColourConstraint(constraint)) {
                     if (constraint.span != null) {
                         spans.push([constraint.span.begin, constraint.span.end, constraintIndex]);
                     }

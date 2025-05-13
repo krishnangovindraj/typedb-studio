@@ -253,7 +253,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "isa",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -267,7 +267,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "has",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -281,7 +281,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "links",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -296,7 +296,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "sub",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -310,7 +310,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "owns",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -324,7 +324,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "relates",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -338,7 +338,7 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "plays",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
@@ -352,27 +352,27 @@ class LogicalGraphBuilder {
                 let inner = constraint.constraint;
                 return {
                     kind: "expression",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
                         text: inner.text,
                         arguments: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                        assigned: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                        assigned: inner.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                     }
                 }
             }
-            case "function":{
+            case "functionCall":{
                 let inner = constraint.constraint;
                 return {
                     kind: "function",
-                    span: inner.span,
+                    span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
                     constraint: {
                         name: inner.name,
                         arguments: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                        assigned: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                        assigned: inner.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                     }
                 }
             }
