@@ -1,6 +1,19 @@
 import { Attribute, AttributeType, Entity, EntityType, Relation, RelationType, RoleType, Type, Value } from "../typedb-driver/concept";
 import { QueryEdge, QueryStructure, QueryVertex, QueryVertexKind } from "../typedb-driver/query-structure";
-import { EdgeAttributes, EdgeMetadata, DataVertex, QueryCoordinates, VertexAttributes, VertexExpression, VertexFunction, VertexMetadata, VertexUnavailable, VisualGraph, DataEdge } from "./graph";
+import {
+    EdgeAttributes,
+    EdgeMetadata,
+    DataVertex,
+    QueryCoordinates,
+    VertexAttributes,
+    VertexExpression,
+    VertexFunction,
+    VertexMetadata,
+    VertexUnavailable,
+    VisualGraph,
+    DataEdge,
+    DataConstraintExpression, DataConstraintFunction
+} from "./graph";
 import {ILogicalGraphConverter} from "./visualisation";
 import {StudioConverterStructureParameters, StudioConverterStyleParameters} from "./config";
 
@@ -133,28 +146,36 @@ export class StudioConverter implements ILogicalGraphConverter {
         this.maybeCreateEdge(edge, vertexMapKey(subtype), vertexMapKey(supertype), "subExact", attributes);
     }
 
-    put_assigned(answerIndex: number, edge: DataEdge, expr_or_func: VertexExpression | VertexFunction, assigned: Value, var_name: string): void {
-        let label = "assign[" + var_name + "]";
-        let attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
-        this.maybeCreateEdge(edge, expr_or_func.vertex_map_key, vertexMapKey(assigned), "assigned", attributes);
+    put_expression(answer_index: number, constraint: DataConstraintExpression, assigned: { data: (Value | VertexUnavailable), variable: string }, args: { data: (Value | Attribute | VertexUnavailable), variable: string }[]): void {
+        console.error("TODO");
     }
 
-    put_argument(answerIndex: number, edge: DataEdge, argument: Value | Attribute, expr_or_func: VertexExpression | VertexFunction, var_name: string): void {
-        const label = `arg[${var_name}]`;
-        const attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
-        let from_vertex_key = null;
-        switch (argument.kind) {
-            case "value": {
-                from_vertex_key = vertexMapKey(argument);
-                break;
-            }
-            case "attribute": {
-                from_vertex_key = vertexMapKey(argument);
-                break;
-            }
-        }
-        this.maybeCreateEdge(edge, from_vertex_key, expr_or_func.vertex_map_key, "argument", attributes);
+    put_argument(answer_index: number, constraint: DataConstraintFunction, assigned: { data: (Entity | Relation | Attribute | Value | VertexUnavailable), variable: string }, args: { data: (Entity | Relation | Attribute | Value | VertexUnavailable), variable: string }[]): void {
+        console.error("TODO");
     }
+
+    // put_assigned(answerIndex: number, edge: DataEdge, expr_or_func: VertexExpression | VertexFunction, assigned: Value, var_name: string): void {
+    //     let label = "assign[" + var_name + "]";
+    //     let attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
+    //     this.maybeCreateEdge(edge, expr_or_func.vertex_map_key, vertexMapKey(assigned), "assigned", attributes);
+    // }
+    //
+    // put_argument(answerIndex: number, edge: DataEdge, argument: Value | Attribute, expr_or_func: VertexExpression | VertexFunction, var_name: string): void {
+    //     const label = `arg[${var_name}]`;
+    //     const attributes = this.edgeAttributes(label, this.edgeMetadata(answerIndex, edge));
+    //     let from_vertex_key = null;
+    //     switch (argument.kind) {
+    //         case "value": {
+    //             from_vertex_key = vertexMapKey(argument);
+    //             break;
+    //         }
+    //         case "attribute": {
+    //             from_vertex_key = vertexMapKey(argument);
+    //             break;
+    //         }
+    //     }
+    //     this.maybeCreateEdge(edge, from_vertex_key, expr_or_func.vertex_map_key, "argument", attributes);
+    // }
 
     private shouldCreateNode(vertex: DataVertex, queryVertex: QueryVertex) {
         return shouldCreateNode(queryVertex);
