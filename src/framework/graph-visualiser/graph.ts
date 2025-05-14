@@ -227,7 +227,7 @@ class LogicalGraphBuilder {
     build(rows_result: ConceptRowsQueryResponse): DataGraph {
         let answers: DataConstraintAny[][] = [];
         rows_result.answers.forEach((row, answerIndex) => {
-            let current_answer_edges = row.involvedBranches.flatMap(branchIndex => {
+            let current_answer_edges = row.involvedBlocks.flatMap(branchIndex => {
                 return rows_result.queryStructure!.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
                     return this.toDataConstraint(answerIndex, constraint, row.data, {
                         branch: branchIndex,
