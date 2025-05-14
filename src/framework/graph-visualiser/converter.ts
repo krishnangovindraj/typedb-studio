@@ -1,30 +1,14 @@
 import {
-    Attribute,
-    AttributeType,
-    Concept,
-    Entity,
-    EntityType,
-    Relation,
-    RelationType,
-    RoleType,
-    Type,
-    Value
-} from "../typedb-driver/concept";
-import {
     QueryConstraintAny,
-    QueryEdge,
     QueryStructure,
     QueryVertex,
-    QueryVertexKind
 } from "../typedb-driver/query-structure";
 import {
     EdgeAttributes,
     EdgeMetadata,
     DataVertex,
-    QueryCoordinates,
     VertexAttributes,
     VertexMetadata,
-    VertexUnavailable,
     VisualGraph,
     DataConstraintExpression,
     DataConstraintFunction,
@@ -37,7 +21,7 @@ import {
     DataConstraintRelates,
     DataConstraintPlays,
     VertexFunction,
-    VertexExpression
+    VertexExpression, DataConstraintSubExact, DataConstraintIsaExact
 } from "./graph";
 import {ILogicalGraphConverter} from "./visualisation";
 import {StudioConverterStructureParameters, StudioConverterStyleParameters} from "./config";
@@ -155,14 +139,21 @@ export class StudioConverter implements ILogicalGraphConverter {
     put_isa(answerIndex: number, constraint: DataConstraintIsa): void {
         let isa =  constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
+        this.maybeCreateEdge(answerIndex, constraint, label, isa.instance, isa.type, queryConstraint.instance, queryConstraint.type);
+    }
+
+    put_isa_exact(answerIndex: number, constraint: DataConstraintIsaExact): void {
+        let isa =  constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, isa.instance, isa.type, queryConstraint.instance, queryConstraint.type);
     }
 
     put_has(answerIndex: number, constraint: DataConstraintHas): void {
         let has =  constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, has.owner, has.attribute, queryConstraint.owner, queryConstraint.attribute);
     }
 
@@ -177,28 +168,35 @@ export class StudioConverter implements ILogicalGraphConverter {
     put_sub(answerIndex: number, constraint: DataConstraintSub): void {
         let sub = constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
+        this.maybeCreateEdge(answerIndex, constraint, label, sub.subtype, sub.supertype, queryConstraint.subtype, queryConstraint.supertype);
+    }
+
+    put_sub_exact(answerIndex: number, constraint: DataConstraintSubExact): void {
+        let sub = constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, sub.subtype, sub.supertype, queryConstraint.subtype, queryConstraint.supertype);
     }
 
     put_owns(answerIndex: number, constraint: DataConstraintOwns): void {
         let owns = constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, owns.owner, owns.attribute, queryConstraint.owner, queryConstraint.attribute);
     }
 
     put_relates(answerIndex: number, constraint: DataConstraintRelates): void {
         let relates = constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, relates.relation, relates.role, queryConstraint.relation, queryConstraint.role);
     }
 
     put_plays(answerIndex: number, constraint: DataConstraintPlays): void {
         let plays = constraint;
         let queryConstraint =  constraint.queryConstraint;
-        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let label = constraint.tag;
         this.maybeCreateEdge(answerIndex, constraint, label, plays.player, plays.role, queryConstraint.player, queryConstraint.role);
     }
 
@@ -248,7 +246,7 @@ export class StudioConverter implements ILogicalGraphConverter {
 }
 
 export function shouldCreateNode(vertex: QueryVertexOrSpecial) {
-    return !["unavailableVariable", "label"].includes(vertex.kind);
+    return !("tag" in vertex && ["unavailableVariable", "label"].includes(vertex.tag));
 }
 
 export function shouldCreateEdge(_edge: QueryConstraintAny, from: QueryVertexOrSpecial, to: QueryVertexOrSpecial) {

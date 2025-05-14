@@ -104,12 +104,15 @@ export class GraphVisualiser {
 
     colorQuery(queryString: string, queryStructure: QueryStructure): string {
         function shouldColourConstraint(constraint: QueryConstraintAny): boolean {
-            switch (constraint.kind) {
+            switch (constraint.tag) {
                 case "isa": return shouldCreateEdge(constraint, constraint.instance, constraint.type);
+                case "isa!": return shouldCreateEdge(constraint, constraint.instance, constraint.type);
                 case "has":  return shouldCreateEdge(constraint, constraint.owner, constraint.attribute);
                 case "links":
                     return shouldCreateEdge(constraint, constraint.relation, constraint.player);
                 case "sub":
+                    return shouldCreateEdge(constraint, constraint.subtype, constraint.supertype);
+                case "sub!":
                     return shouldCreateEdge(constraint, constraint.subtype, constraint.supertype);
                 case "owns":
                     return shouldCreateEdge(constraint, constraint.owner, constraint.attribute);
@@ -130,11 +133,11 @@ export class GraphVisualiser {
             }
         }
         let spans: number[][] = [];
-        queryStructure.branches.forEach(branch => {
+        queryStructure.blocks.forEach(branch => {
             branch.constraints.forEach((constraint, constraintIndex) => {
                 if (shouldColourConstraint(constraint)) {
-                    if (constraint.span != null) {
-                        spans.push([constraint.span.begin, constraint.span.end, constraintIndex]);
+                    if (constraint.textSpan != null) {
+                        spans.push([constraint.textSpan.begin, constraint.textSpan.end, constraintIndex]);
                     }
                 }
             })

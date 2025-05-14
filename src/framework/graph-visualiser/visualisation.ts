@@ -1,27 +1,7 @@
-import MultiGraph from "graphology";
-import Sigma from "sigma";
-
-import {
-  Attribute,
-  AttributeType,
-  Concept,
-  Entity,
-  EntityType,
-  InstantiableType,
-  Relation,
-  RelationType,
-  RoleType,
-  Value
-} from "../typedb-driver/concept";
-import { QueryEdge, QueryVertex } from "../typedb-driver/query-structure";
+import { QueryVertex } from "../typedb-driver/query-structure";
 import {
   DataGraph,
   DataVertex,
-  SpecialVertexKind,
-  QueryCoordinates,
-  VertexExpression,
-  VertexFunction,
-  VertexUnavailable,
   DataConstraintAny,
   DataConstraintLinks,
   DataConstraintHas,
@@ -31,7 +11,7 @@ import {
   DataConstraintPlays,
   DataConstraintSub,
   DataConstraintFunction,
-  DataConstraintExpression
+  DataConstraintExpression, DataConstraintIsaExact, DataConstraintSubExact
 } from "./graph";
 
 /////////////////////////////////
@@ -53,11 +33,15 @@ export interface ILogicalGraphConverter {
   // Edges
   put_isa(answer_index: number, constraint: DataConstraintIsa): void;
 
+  put_isa_exact(answerIndex: number, constraint: DataConstraintIsaExact): void
+
   put_has(answer_index: number, constraint: DataConstraintHas): void;
 
   put_links(answer_index: number, constraint: DataConstraintLinks): void;
 
   put_sub(answer_index: number, constraint: DataConstraintSub): void;
+
+  put_sub_exact(answerIndex: number, constraint: DataConstraintSubExact): void;
 
   put_owns(answer_index: number, constraint: DataConstraintOwns): void;
 
@@ -79,9 +63,13 @@ export function convertLogicalGraphWith(dataGraph: DataGraph, converter: ILogica
 }
 
 function putConstraint(converter: ILogicalGraphConverter, answer_index: number, constraint: DataConstraintAny, logicalGraph: DataGraph) {
-  switch (constraint.kind) {
+  switch (constraint.tag) {
     case "isa":{
       converter.put_isa(answer_index, constraint);
+      break;
+    }
+    case "isa!":{
+      converter.put_isa_exact(answer_index, constraint);
       break;
     }
     case "has": {
@@ -94,6 +82,10 @@ function putConstraint(converter: ILogicalGraphConverter, answer_index: number, 
     }
     case "sub": {
       converter.put_sub(answer_index, constraint);
+      break;
+    }
+    case "sub!": {
+      converter.put_sub_exact(answer_index, constraint);
       break;
     }
     case "owns": {
