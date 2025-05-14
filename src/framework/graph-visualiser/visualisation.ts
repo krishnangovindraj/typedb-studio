@@ -85,22 +85,18 @@ function putConstraint(converter: ILogicalGraphConverter, answer_index: number, 
       break;
     }
     case "has": {
-      let inner = constraint.constraint;
       converter.put_has(answer_index, constraint);
       break;
     }
     case "links": {
-      let inner = constraint.constraint;
       converter.put_links(answer_index, constraint);
       break;
     }
     case "sub": {
-      let inner = constraint.constraint;
       converter.put_sub(answer_index, constraint);
       break;
     }
     case "owns": {
-      let inner = constraint.constraint;
       converter.put_owns(answer_index, constraint);
       break;
     }

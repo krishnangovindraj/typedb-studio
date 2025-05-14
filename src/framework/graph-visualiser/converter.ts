@@ -153,95 +153,95 @@ export class StudioConverter implements ILogicalGraphConverter {
 
     // Edges
     put_isa(answerIndex: number, constraint: DataConstraintIsa): void {
-        let isa =  constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let isa =  constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, isa.instance, isa.type, queryConstraint.instance, queryConstraint.type);
     }
 
     put_has(answerIndex: number, constraint: DataConstraintHas): void {
-        let has =  constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let has =  constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, has.owner, has.attribute, queryConstraint.owner, queryConstraint.attribute);
     }
 
     put_links(answerIndex: number, constraint: DataConstraintLinks): void {
-        let links = constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
+        let links = constraint;
+        let queryConstraint =  constraint.queryConstraint;
         const label = links.role.kind === "roleType" ? links.role.label.split(":").at(-1) : `?`;
         if (!label) throw `${this.put_links.name}: invalid role label '${JSON.stringify(links.role)}'`;
         this.maybeCreateEdge(answerIndex, constraint, label, links.relation, links.player, queryConstraint.relation, queryConstraint.player);
     }
 
     put_sub(answerIndex: number, constraint: DataConstraintSub): void {
-        let sub = constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let sub = constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, sub.subtype, sub.supertype, queryConstraint.subtype, queryConstraint.supertype);
     }
 
     put_owns(answerIndex: number, constraint: DataConstraintOwns): void {
-        let owns = constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let owns = constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, owns.owner, owns.attribute, queryConstraint.owner, queryConstraint.attribute);
     }
 
     put_relates(answerIndex: number, constraint: DataConstraintRelates): void {
-        let relates = constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let relates = constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, relates.relation, relates.role, queryConstraint.relation, queryConstraint.role);
     }
 
     put_plays(answerIndex: number, constraint: DataConstraintPlays): void {
-        let plays = constraint.constraint;
-        let queryConstraint =  constraint.queryConstraint.constraint;
-        let label = constraint.constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
+        let plays = constraint;
+        let queryConstraint =  constraint.queryConstraint;
+        let label = constraint.exactness == "exact" ? constraint.kind + "!" : constraint.kind;
         this.maybeCreateEdge(answerIndex, constraint, label, plays.player, plays.role, queryConstraint.player, queryConstraint.role);
     }
 
     put_expression(answerIndex: number, constraint: DataConstraintExpression): void {
-        let expression = constraint.constraint;
+        let expression = constraint;
         let expressionVertex: VertexExpression = {
             kind: "expression",
             answerIndex: answerIndex,
-            repr: constraint.constraint.text,
+            repr: constraint.text,
             vertex_map_key: `expr_${answerIndex}_${constraint.queryCoordinates.branch}_{${constraint.queryCoordinates.constraint}}`
         }
         expression.assigned
             .forEach((assigned, i) => {
-                let queryVertex = constraint.queryConstraint.constraint.assigned[i];
-                let label = `assign[${queryVertex.value.variable}]`;
+                let queryVertex = constraint.queryConstraint.assigned[i];
+                let label = `assign[${queryVertex.variable}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, expressionVertex, assigned, expressionVertex, queryVertex);
             });
         expression.arguments
             .forEach((arg, i) => {
-                let queryVertex = constraint.queryConstraint.constraint.arguments[i];
-                let label = `arg[${queryVertex.value.variable}]`;
+                let queryVertex = constraint.queryConstraint.arguments[i];
+                let label = `arg[${queryVertex.variable}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, arg, expressionVertex, queryVertex, expressionVertex);
             });
     }
 
     put_function(answerIndex: number, constraint: DataConstraintFunction): void {
-        let functionCall = constraint.constraint;
+        let functionCall = constraint;
         let functionVertexKey = `f_${answerIndex}_${constraint.queryCoordinates.branch}_{${constraint.queryCoordinates.constraint}}`;
         let functionVertex: VertexFunction = {
             kind: "functionCall", answerIndex: answerIndex,
-            repr: constraint.constraint.name,
+            repr: constraint.name,
             vertex_map_key: functionVertexKey
         }
         functionCall.assigned
             .forEach((assigned, i) => {
-                let queryVertex = constraint.queryConstraint.constraint.assigned[i];
-                let label = `assign[${queryVertex.value.variable}]`;
+                let queryVertex = constraint.queryConstraint.assigned[i];
+                let label = `assign[${queryVertex.variable}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, functionVertex, assigned, functionVertex, queryVertex);
             });
         functionCall.arguments
             .forEach((arg, i) => {
-                let queryVertex = constraint.queryConstraint.constraint.arguments[i];
-                let label = `arg[${queryVertex.value.variable}]`;
+                let queryVertex = constraint.queryConstraint.arguments[i];
+                let label = `arg[${queryVertex.variable}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, arg, functionVertex, queryVertex, functionVertex);
             });
     }

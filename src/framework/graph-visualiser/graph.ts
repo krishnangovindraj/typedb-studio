@@ -17,8 +17,8 @@ import {
     QueryConstraintSub,
     QueryVertex,
 } from "../typedb-driver/query-structure";
-import { ConceptRow, ConceptRowsQueryResponse } from "../typedb-driver/response";
-import { MultiGraph } from "graphology";
+import {ConceptRow, ConceptRowsQueryResponse} from "../typedb-driver/response";
+import {MultiGraph} from "graphology";
 
 ///////////////////////
 // TypeDB Data Graph //
@@ -37,7 +37,7 @@ export type DataVertex = Concept | DataVertexSpecial;
 export type QueryCoordinates = { branch: number, constraint: number };
 
 export type DataGraph = {
-  answers: DataConstraintAny[][];
+    answers: DataConstraintAny[][];
 }
 
 export type DataConstraintAny = DataConstraintIsa | DataConstraintHas | DataConstraintLinks |
@@ -46,17 +46,18 @@ export type DataConstraintAny = DataConstraintIsa | DataConstraintHas | DataCons
 
 export type DataConstraintSpan = QueryConstraintSpan;
 export type DataConstraintExactness = QueryConstraintExactness;
+
 // Instance
 export interface DataConstraintIsa {
     kind: "isa",
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintIsa,
-    constraint: {
-        instance: Entity | Relation | Attribute | VertexUnavailable,
-        type: InstantiableType | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    instance: Entity | Relation | Attribute | VertexUnavailable,
+    type: InstantiableType | VertexUnavailable,
+    exactness: DataConstraintExactness,
+
 }
 
 export interface DataConstraintHas {
@@ -64,11 +65,10 @@ export interface DataConstraintHas {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintHas,
-    constraint: {
-        owner: Entity | Relation  | VertexUnavailable,
-        attribute: Attribute | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    },
+
+    owner: Entity | Relation | VertexUnavailable,
+    attribute: Attribute | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 
@@ -77,12 +77,11 @@ export interface DataConstraintLinks {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintLinks,
-    constraint: {
-        relation: Relation | VertexUnavailable,
-        player: Relation | Entity | VertexUnavailable,
-        role: RoleType | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    relation: Relation | VertexUnavailable,
+    player: Relation | Entity | VertexUnavailable,
+    role: RoleType | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 // Type
@@ -91,11 +90,10 @@ export interface DataConstraintSub {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintSub,
-    constraint: {
-        subtype: Type | VertexUnavailable,
-        supertype: Type | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    subtype: Type | VertexUnavailable,
+    supertype: Type | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 export interface DataConstraintOwns {
@@ -103,11 +101,10 @@ export interface DataConstraintOwns {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintOwns,
-    constraint: {
-        owner: EntityType | RelationType | VertexUnavailable,
-        attribute: AttributeType | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    owner: EntityType | RelationType | VertexUnavailable,
+    attribute: AttributeType | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 export interface DataConstraintRelates {
@@ -115,11 +112,10 @@ export interface DataConstraintRelates {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintRelates,
-    constraint: {
-        relation: RelationType | VertexUnavailable,
-        role: RoleType | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    relation: RelationType | VertexUnavailable,
+    role: RoleType | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 export interface DataConstraintPlays {
@@ -127,11 +123,10 @@ export interface DataConstraintPlays {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintPlays,
-    constraint: {
-        player: EntityType | RelationType | VertexUnavailable,
-        role: RoleType | VertexUnavailable,
-        exactness: DataConstraintExactness,
-    }
+
+    player: EntityType | RelationType | VertexUnavailable,
+    role: RoleType | VertexUnavailable,
+    exactness: DataConstraintExactness,
 }
 
 // Function
@@ -140,11 +135,10 @@ export interface DataConstraintExpression {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintExpression,
-    constraint: {
-        text: string,
-        arguments: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
-        assigned: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
-    }
+
+    text: string,
+    arguments: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
+    assigned: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
 }
 
 export interface DataConstraintFunction {
@@ -152,11 +146,10 @@ export interface DataConstraintFunction {
     span: DataConstraintSpan,
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintFunction,
-    constraint: {
-        name: string,
-        arguments: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
-        assigned: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
-    }
+
+    name: string,
+    arguments: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
+    assigned: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
 }
 
 export interface VertexMetadata {
@@ -189,7 +182,8 @@ export interface EdgeAttributes {
     metadata: EdgeMetadata;
 }
 
-export interface GraphAttributes {}
+export interface GraphAttributes {
+}
 
 export type VisualGraph = MultiGraph<VertexAttributes, EdgeAttributes, GraphAttributes>;
 
@@ -198,7 +192,7 @@ export const newVisualGraph: () => VisualGraph = () => new MultiGraph<VertexAttr
 ///////////////////////////////////
 // TypeDB server -> logical graph
 ///////////////////////////////////
-export function constructGraphFromRowsResult(rows_result: ConceptRowsQueryResponse) : DataGraph {
+export function constructGraphFromRowsResult(rows_result: ConceptRowsQueryResponse): DataGraph {
     return new LogicalGraphBuilder().build(rows_result);
 }
 
@@ -209,37 +203,45 @@ function is_branch_involved(provenanceBitArray: Array<number>, branchIndex: numb
 }
 
 class LogicalGraphBuilder {
-    constructor() { }
+    constructor() {
+    }
 
-    build(rows_result: ConceptRowsQueryResponse) : DataGraph {
+    build(rows_result: ConceptRowsQueryResponse): DataGraph {
         let answers: DataConstraintAny[][] = [];
         rows_result.answers.forEach((row, answerIndex) => {
             let current_answer_edges = row.involvedBranches.flatMap(branchIndex => {
                 return rows_result.queryStructure!.branches[branchIndex].constraints.map((constraint, constraintIndex) => {
-                    return this.toDataConstraint(answerIndex, constraint, row.data, { branch: branchIndex, constraint: constraintIndex});
+                    return this.toDataConstraint(answerIndex, constraint, row.data, {
+                        branch: branchIndex,
+                        constraint: constraintIndex
+                    });
                 });
             });
             answers.push(current_answer_edges);
         });
-        return { answers: answers };
+        return {answers: answers};
     }
 
     translate_vertex(structure_vertex: QueryVertex, answerIndex: number, data: ConceptRow): DataVertex {
         switch (structure_vertex.kind) {
             case "variable": {
-                return data[structure_vertex.value.variable] as Concept;
-            } 
+                return data[structure_vertex.variable] as Concept;
+            }
             case "label": {
-                let vertex= structure_vertex.value;
-                return { kind: vertex.kind, label: vertex.label } as Type;
+                let vertex = structure_vertex.value;
+                return {kind: vertex.kind, label: vertex.label} as Type;
             }
             case "value": {
                 return structure_vertex.value;
             }
             case "unavailableVariable": {
-                let vertex = structure_vertex.value;
-                let key = "unavailable[" + vertex.variable + "][" + answerIndex + "]";
-                return { kind: "unavailable", vertex_map_key: key, answerIndex: answerIndex, variable: vertex.variable } as VertexUnavailable;
+                let key = "unavailable[" + structure_vertex.variable + "][" + answerIndex + "]";
+                return {
+                    kind: "unavailable",
+                    vertex_map_key: key,
+                    answerIndex: answerIndex,
+                    variable: structure_vertex.variable
+                } as VertexUnavailable;
             }
             default: {
                 throw new Error("Unsupported vertex type: " + structure_vertex);
@@ -250,135 +252,117 @@ class LogicalGraphBuilder {
     private toDataConstraint(answerIndex: number, constraint: QueryConstraintAny, data: ConceptRow, coordinates: QueryCoordinates): DataConstraintAny {
         switch (constraint.kind) {
             case "isa": {
-                let inner = constraint.constraint;
                 return {
                     kind: "isa",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        instance: this.translate_vertex(inner.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
-                        type: this.translate_vertex(inner.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    instance: this.translate_vertex(constraint.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
+                    type: this.translate_vertex(constraint.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "has": {
-                let inner = constraint.constraint;
                 return {
                     kind: "has",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        owner: this.translate_vertex(inner.owner, answerIndex, data) as (Entity | Relation | VertexUnavailable),
-                        attribute: this.translate_vertex(inner.attribute, answerIndex, data) as (Attribute | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    owner: this.translate_vertex(constraint.owner, answerIndex, data) as (Entity | Relation | VertexUnavailable),
+                    attribute: this.translate_vertex(constraint.attribute, answerIndex, data) as (Attribute | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "links": {
-                let inner = constraint.constraint;
                 return {
                     kind: "links",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        relation: this.translate_vertex(inner.relation, answerIndex, data) as (Relation | VertexUnavailable),
-                        player: this.translate_vertex(inner.player, answerIndex, data) as (Entity | Relation | VertexUnavailable),
-                        role: this.translate_vertex(inner.role, answerIndex, data) as (RoleType | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    relation: this.translate_vertex(constraint.relation, answerIndex, data) as (Relation | VertexUnavailable),
+                    player: this.translate_vertex(constraint.player, answerIndex, data) as (Entity | Relation | VertexUnavailable),
+                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "sub": {
-                let inner = constraint.constraint;
                 return {
                     kind: "sub",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        subtype: this.translate_vertex(inner.subtype, answerIndex, data) as (Type | VertexUnavailable),
-                        supertype: this.translate_vertex(inner.supertype, answerIndex, data) as (Type | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    subtype: this.translate_vertex(constraint.subtype, answerIndex, data) as (Type | VertexUnavailable),
+                    supertype: this.translate_vertex(constraint.supertype, answerIndex, data) as (Type | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "owns": {
-                let inner = constraint.constraint;
                 return {
                     kind: "owns",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        owner: this.translate_vertex(inner.owner, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
-                        attribute: this.translate_vertex(inner.attribute, answerIndex, data) as (AttributeType | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    owner: this.translate_vertex(constraint.owner, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
+                    attribute: this.translate_vertex(constraint.attribute, answerIndex, data) as (AttributeType | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "relates": {
-                let inner = constraint.constraint;
                 return {
                     kind: "relates",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        relation: this.translate_vertex(inner.relation, answerIndex, data) as (RelationType | VertexUnavailable),
-                        role: this.translate_vertex(inner.role, answerIndex, data) as (RoleType | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    relation: this.translate_vertex(constraint.relation, answerIndex, data) as (RelationType | VertexUnavailable),
+                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
             case "plays": {
-                let inner = constraint.constraint;
                 return {
                     kind: "plays",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        player: this.translate_vertex(inner.player, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
-                        role: this.translate_vertex(inner.role, answerIndex, data) as (RoleType | VertexUnavailable),
-                        exactness: inner.exactness,
-                    }
+
+                    player: this.translate_vertex(constraint.player, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
+                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    exactness: constraint.exactness,
                 }
             }
-            case "expression":  {
-                let inner = constraint.constraint;
+            case "expression": {
                 return {
                     kind: "expression",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        text: inner.text,
-                        arguments: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                        assigned: inner.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                    }
+
+                    text: constraint.text,
+                    arguments: constraint.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    assigned: constraint.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                 }
             }
-            case "functionCall":{
-                let inner = constraint.constraint;
+            case "functionCall": {
                 return {
                     kind: "function",
                     span: constraint.span,
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
-                    constraint: {
-                        name: inner.name,
-                        arguments: inner.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                        assigned: inner.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                    }
+
+                    name: constraint.name,
+                    arguments: constraint.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    assigned: constraint.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                 }
             }
             default: {
-                console.log("Unsupported Constraint:"+ constraint)
-                throw new Error("Unsupported Constraint:"+ constraint);
+                console.log("Unsupported Constraint:" + constraint)
+                throw new Error("Unsupported Constraint:" + constraint);
             }
         }
     }

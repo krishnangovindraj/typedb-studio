@@ -105,27 +105,27 @@ export class GraphVisualiser {
     colorQuery(queryString: string, queryStructure: QueryStructure): string {
         function shouldColourConstraint(constraint: QueryConstraintAny): boolean {
             switch (constraint.kind) {
-                case "isa": return shouldCreateEdge(constraint, constraint.constraint.instance, constraint.constraint.type);
-                case "has":  return shouldCreateEdge(constraint, constraint.constraint.owner, constraint.constraint.attribute);
+                case "isa": return shouldCreateEdge(constraint, constraint.instance, constraint.type);
+                case "has":  return shouldCreateEdge(constraint, constraint.owner, constraint.attribute);
                 case "links":
-                    return shouldCreateEdge(constraint, constraint.constraint.relation, constraint.constraint.player);
+                    return shouldCreateEdge(constraint, constraint.relation, constraint.player);
                 case "sub":
-                    return shouldCreateEdge(constraint, constraint.constraint.subtype, constraint.constraint.supertype);
+                    return shouldCreateEdge(constraint, constraint.subtype, constraint.supertype);
                 case "owns":
-                    return shouldCreateEdge(constraint, constraint.constraint.owner, constraint.constraint.attribute);
+                    return shouldCreateEdge(constraint, constraint.owner, constraint.attribute);
                 case "relates":
-                    return shouldCreateEdge(constraint, constraint.constraint.relation, constraint.constraint.role);
+                    return shouldCreateEdge(constraint, constraint.relation, constraint.role);
                 case "plays":
-                    return shouldCreateEdge(constraint, constraint.constraint.player, constraint.constraint.role);
+                    return shouldCreateEdge(constraint, constraint.player, constraint.role);
                 case "expression":
                     return (
-                        constraint.constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
-                        || constraint.constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
+                        constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
+                        || constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
                     );
                 case "functionCall":
                     return (
-                        constraint.constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
-                        || constraint.constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
+                        constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
+                        || constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
                     );
             }
         }
