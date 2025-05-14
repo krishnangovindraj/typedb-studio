@@ -228,7 +228,7 @@ class LogicalGraphBuilder {
                 return data[structure_vertex.variable] as Concept;
             }
             case "label": {
-                let vertex = structure_vertex.value;
+                let vertex = structure_vertex.type;
                 return {kind: vertex.kind, label: vertex.label} as Type;
             }
             case "value": {

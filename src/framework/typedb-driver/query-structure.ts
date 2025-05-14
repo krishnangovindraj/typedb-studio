@@ -4,7 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import {EdgeKind, TypeKind, Value} from "./concept";
+import {EdgeKind, Type, TypeKind, Value} from "./concept";
 import {DataConstraintSpan} from "../graph-visualiser/graph";
 
 export type QueryVertexKind = "variable" | "label" | "value" | "unavailableVariable" | "expression" | "functionCall";
@@ -16,7 +16,7 @@ export interface QueryVertexVariable {
 
 export interface QueryVertexLabel {
     kind: "label";
-    value: { kind: TypeKind, label: string };
+    type: Type;
 }
 
 export interface QueryVertexValue {
