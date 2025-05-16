@@ -10,6 +10,7 @@ import {
     ValueKind
 } from "../typedb-driver/concept";
 import {
+    get_variable_name,
     QueryConstraintAny, QueryConstraintComparison,
     QueryConstraintExpression,
     QueryConstraintFunction,
@@ -21,7 +22,7 @@ import {
     QueryConstraintPlays,
     QueryConstraintRelates,
     QueryConstraintSpan,
-    QueryConstraintSub, QueryConstraintSubExact,
+    QueryConstraintSub, QueryConstraintSubExact, QueryStructure,
     QueryVertex,
 } from "../typedb-driver/query-structure";
 import {ConceptRow, ConceptRowsQueryResponse} from "../typedb-driver/response";
@@ -34,8 +35,8 @@ import {MultiGraph} from "graphology";
 export type SpecialVertexKind = "unavailable" | "expression" | "functionCall";
 
 export type VertexUnavailable = { kind: "unavailable", variable: string, answerIndex: number, vertex_map_key: string };
-export type VertexExpression = { kind: "expression", repr: string, answerIndex: number, vertex_map_key: string };
-export type VertexFunction = { kind: "functionCall", repr: string, answerIndex: number, vertex_map_key: string };
+export type VertexExpression = { tag: "expression", kind: "expression", repr: string, answerIndex: number, vertex_map_key: string };
+export type VertexFunction = { tag: "functionCall", kind: "functionCall", repr: string, answerIndex: number, vertex_map_key: string };
 export type DataVertexSpecial = VertexUnavailable | VertexFunction | VertexExpression;
 
 export type DataVertexKind = ThingKind | TypeKind | ValueKind | SpecialVertexKind;
@@ -255,7 +256,7 @@ class LogicalGraphBuilder {
         rows_result.answers.forEach((row, answerIndex) => {
             let current_answer_edges = row.involvedBlocks.flatMap(branchIndex => {
                 return rows_result.query!.structure.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
-                    return this.toDataConstraint(answerIndex, constraint, row.data, {
+                    return this.toDataConstraint(rows_result.query!.structure, answerIndex, constraint, row.data, {
                         branch: branchIndex,
                         constraint: constraintIndex
                     });
@@ -266,18 +267,20 @@ class LogicalGraphBuilder {
         return {answers: answers};
     }
 
-    translate_vertex(structure_vertex: QueryVertex, answerIndex: number, data: ConceptRow): DataVertex {
+    translate_vertex(structure: QueryStructure, structure_vertex: QueryVertex, answerIndex: number, data: ConceptRow): DataVertex {
         switch (structure_vertex.tag) {
             case "variable": {
-                if (structure_vertex.inAnswer) {
-                    return data[structure_vertex.name] as Concept;
+                let name = get_variable_name(structure, structure_vertex);
+                if (name != null && data[name] != null ) {
+                    return data[name]!;
                 } else {
-                    let key = "unavailable[" + structure_vertex.name + "]";
+                    let nameOrId = name ?? `$_${structure_vertex.id}`;
+                    let key = `unavailable[${nameOrId}][${answerIndex}]`;
                     return {
                         kind: "unavailable",
                         vertex_map_key: key,
                         answerIndex: answerIndex,
-                        variable: structure_vertex.name
+                        variable: nameOrId,
                     } as VertexUnavailable;
                 }
             }
@@ -291,7 +294,7 @@ class LogicalGraphBuilder {
         }
     }
 
-    private toDataConstraint(answerIndex: number, constraint: QueryConstraintAny, data: ConceptRow, coordinates: QueryCoordinates): DataConstraintAny {
+    private toDataConstraint(structure: QueryStructure, answerIndex: number, constraint: QueryConstraintAny, data: ConceptRow, coordinates: QueryCoordinates): DataConstraintAny {
         switch (constraint.tag) {
             case "isa": {
                 return {
@@ -300,8 +303,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    instance: this.translate_vertex(constraint.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
-                    type: this.translate_vertex(constraint.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
+                    instance: this.translate_vertex(structure, constraint.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
+                    type: this.translate_vertex(structure, constraint.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
                 }
             }
             case "isa!": {
@@ -311,8 +314,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    instance: this.translate_vertex(constraint.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
-                    type: this.translate_vertex(constraint.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
+                    instance: this.translate_vertex(structure, constraint.instance, answerIndex, data) as (Entity | Relation | Attribute | VertexUnavailable),
+                    type: this.translate_vertex(structure, constraint.type, answerIndex, data) as (InstantiableType | VertexUnavailable),
                 }
             }
             case "has": {
@@ -322,8 +325,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    owner: this.translate_vertex(constraint.owner, answerIndex, data) as (Entity | Relation | VertexUnavailable),
-                    attribute: this.translate_vertex(constraint.attribute, answerIndex, data) as (Attribute | VertexUnavailable),
+                    owner: this.translate_vertex(structure, constraint.owner, answerIndex, data) as (Entity | Relation | VertexUnavailable),
+                    attribute: this.translate_vertex(structure, constraint.attribute, answerIndex, data) as (Attribute | VertexUnavailable),
                 }
             }
             case "links": {
@@ -333,9 +336,9 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    relation: this.translate_vertex(constraint.relation, answerIndex, data) as (Relation | VertexUnavailable),
-                    player: this.translate_vertex(constraint.player, answerIndex, data) as (Entity | Relation | VertexUnavailable),
-                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    relation: this.translate_vertex(structure, constraint.relation, answerIndex, data) as (Relation | VertexUnavailable),
+                    player: this.translate_vertex(structure, constraint.player, answerIndex, data) as (Entity | Relation | VertexUnavailable),
+                    role: this.translate_vertex(structure, constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
                 }
             }
             case "sub": {
@@ -345,8 +348,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    subtype: this.translate_vertex(constraint.subtype, answerIndex, data) as (Type | VertexUnavailable),
-                    supertype: this.translate_vertex(constraint.supertype, answerIndex, data) as (Type | VertexUnavailable),
+                    subtype: this.translate_vertex(structure, constraint.subtype, answerIndex, data) as (Type | VertexUnavailable),
+                    supertype: this.translate_vertex(structure, constraint.supertype, answerIndex, data) as (Type | VertexUnavailable),
                 }
             }
             case "sub!": {
@@ -356,8 +359,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    subtype: this.translate_vertex(constraint.subtype, answerIndex, data) as (Type | VertexUnavailable),
-                    supertype: this.translate_vertex(constraint.supertype, answerIndex, data) as (Type | VertexUnavailable),
+                    subtype: this.translate_vertex(structure, constraint.subtype, answerIndex, data) as (Type | VertexUnavailable),
+                    supertype: this.translate_vertex(structure, constraint.supertype, answerIndex, data) as (Type | VertexUnavailable),
                 }
             }
             case "owns": {
@@ -367,8 +370,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    owner: this.translate_vertex(constraint.owner, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
-                    attribute: this.translate_vertex(constraint.attribute, answerIndex, data) as (AttributeType | VertexUnavailable),
+                    owner: this.translate_vertex(structure, constraint.owner, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
+                    attribute: this.translate_vertex(structure, constraint.attribute, answerIndex, data) as (AttributeType | VertexUnavailable),
                 }
             }
             case "relates": {
@@ -378,8 +381,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    relation: this.translate_vertex(constraint.relation, answerIndex, data) as (RelationType | VertexUnavailable),
-                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    relation: this.translate_vertex(structure, constraint.relation, answerIndex, data) as (RelationType | VertexUnavailable),
+                    role: this.translate_vertex(structure, constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
                 }
             }
             case "plays": {
@@ -389,8 +392,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    player: this.translate_vertex(constraint.player, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
-                    role: this.translate_vertex(constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
+                    player: this.translate_vertex(structure, constraint.player, answerIndex, data) as (EntityType | RelationType | VertexUnavailable),
+                    role: this.translate_vertex(structure, constraint.role, answerIndex, data) as (RoleType | VertexUnavailable),
                 }
             }
             case "expression": {
@@ -401,8 +404,8 @@ class LogicalGraphBuilder {
                     queryConstraint: constraint,
 
                     text: constraint.text,
-                    arguments: constraint.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                    assigned: constraint.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    arguments: constraint.arguments.map(vertex => this.translate_vertex(structure, vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    assigned: constraint.assigned.map(vertex => this.translate_vertex(structure, vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                 }
             }
             case "functionCall": {
@@ -413,8 +416,8 @@ class LogicalGraphBuilder {
                     queryConstraint: constraint,
 
                     name: constraint.name,
-                    arguments: constraint.arguments.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
-                    assigned: constraint.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    arguments: constraint.arguments.map(vertex => this.translate_vertex(structure, vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
+                    assigned: constraint.assigned.map(vertex => this.translate_vertex(structure, vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                 }
             }
             case "comparison" : {
@@ -424,8 +427,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    lhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
-                    rhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
+                    lhs: this.translate_vertex(structure, constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
+                    rhs: this.translate_vertex(structure, constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
                     comparator: constraint.comparator,
                 }
             }
@@ -436,8 +439,8 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    lhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
-                    rhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
+                    lhs: this.translate_vertex(structure, constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
+                    rhs: this.translate_vertex(structure, constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
                 }
             }
             case "iid" : {
@@ -447,7 +450,7 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    variable: this.translate_vertex(constraint.variable, answerIndex, data) as (Concept | VertexUnavailable),
+                    variable: this.translate_vertex(structure, constraint.variable, answerIndex, data) as (Concept | VertexUnavailable),
                     iid: constraint.iid,
                 }
             }

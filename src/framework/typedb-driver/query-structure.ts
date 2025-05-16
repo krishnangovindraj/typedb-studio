@@ -10,9 +10,7 @@ export type QueryVertexKind = "variable" | "label" | "value";
 
 export interface QueryVertexVariable {
     tag: "variable";
-    id: number,
-    name: string,
-    inAnswer: boolean,
+    id: string,
 }
 
 export interface QueryVertexLabel {
@@ -28,7 +26,17 @@ export interface QueryVertexValue {
 export type QueryVertex = QueryVertexVariable | QueryVertexLabel | QueryVertexValue;
 // TODO:
 // export enum VertexKindOther = { }
-export type QueryStructure = { blocks: { constraints: QueryConstraintAny[] }[] };
+export type QueryStructure = {
+    blocks: { constraints: QueryConstraintAny[] }[],
+    variableInfo: {[name: string]: QueryVariableInfo },
+    outputVariables: string[],
+};
+
+export function get_variable_name(structure: QueryStructure, variable: QueryVertexVariable) : string | null {
+    return structure.variableInfo[variable.id]?.name;
+}
+
+export type QueryVariableInfo = { name: string | null };
 
 export type QueryConstraintAny = QueryConstraintIsa | QueryConstraintIsaExact | QueryConstraintHas | QueryConstraintLinks |
     QueryConstraintSub | QueryConstraintSubExact | QueryConstraintOwns | QueryConstraintRelates | QueryConstraintPlays |
