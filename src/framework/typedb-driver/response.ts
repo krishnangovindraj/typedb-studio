@@ -44,9 +44,11 @@ export type ConceptDocument = Object;
 export type Answer = ConceptRowAnswer | ConceptDocument;
 
 export interface QueryResponseBase {
-    queryType: QueryType;
     answerType: AnswerType;
-    queryStructure: QueryStructure | null;
+    query: {
+        type: QueryType;
+        structure: QueryStructure
+    };
     comment: string | null;
 }
 

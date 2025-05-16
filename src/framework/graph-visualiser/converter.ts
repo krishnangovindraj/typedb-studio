@@ -211,13 +211,13 @@ export class StudioConverter implements ILogicalGraphConverter {
         expression.assigned
             .forEach((assigned, i) => {
                 let queryVertex = constraint.queryConstraint.assigned[i];
-                let label = `assign[${queryVertex.variable}]`;
+                let label = `assign[${queryVertex.name}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, expressionVertex, assigned, expressionVertex, queryVertex);
             });
         expression.arguments
             .forEach((arg, i) => {
                 let queryVertex = constraint.queryConstraint.arguments[i];
-                let label = `arg[${queryVertex.variable}]`;
+                let label = `arg[${queryVertex.name}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, arg, expressionVertex, queryVertex, expressionVertex);
             });
     }
@@ -233,20 +233,22 @@ export class StudioConverter implements ILogicalGraphConverter {
         functionCall.assigned
             .forEach((assigned, i) => {
                 let queryVertex = constraint.queryConstraint.assigned[i];
-                let label = `assign[${queryVertex.variable}]`;
+                let label = `assign[${queryVertex.name}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, functionVertex, assigned, functionVertex, queryVertex);
             });
         functionCall.arguments
             .forEach((arg, i) => {
                 let queryVertex = constraint.queryConstraint.arguments[i];
-                let label = `arg[${queryVertex.variable}]`;
+                let label = `arg[${queryVertex.name}]`;
                 this.maybeCreateEdge(answerIndex, constraint, label, arg, functionVertex, queryVertex, functionVertex);
             });
     }
 }
 
 export function shouldCreateNode(vertex: QueryVertexOrSpecial) {
-    return !("tag" in vertex && ["unavailableVariable", "label"].includes(vertex.tag));
+    return !("tag" in vertex &&
+        (vertex.tag === "label" || (vertex.tag == "variable" && vertex.inAnswer === false))
+    );
 }
 
 export function shouldCreateEdge(_edge: QueryConstraintAny, from: QueryVertexOrSpecial, to: QueryVertexOrSpecial) {

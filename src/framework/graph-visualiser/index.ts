@@ -48,8 +48,8 @@ export class GraphVisualiser {
     handleQueryResult(res: ApiResponse<QueryResponse>) {
         if (isApiErrorResponse(res)) return;
 
-        if (res.ok.answerType == "conceptRows" && res.ok.queryStructure != null) {
-            let converter = new StudioConverter(this.graph, res.ok.queryStructure, false, this.structureParameters, this.styleParameters);
+        if (res.ok.answerType == "conceptRows" && res.ok.query != null) {
+            let converter = new StudioConverter(this.graph, res.ok.query.structure, false, this.structureParameters, this.styleParameters);
             let logicalGraph = constructGraphFromRowsResult(res.ok); // In memory, not visualised
             this.graph.clear();
             convertLogicalGraphWith(logicalGraph, converter);
@@ -59,8 +59,8 @@ export class GraphVisualiser {
     handleExplorationQueryResult(res: ApiResponse<QueryResponse>) {
         if (isApiErrorResponse(res)) return;
 
-        if (res.ok.answerType == "conceptRows" && res.ok.queryStructure != null) {
-            let converter = new StudioConverter(this.graph, res.ok.queryStructure, true, this.structureParameters, this.styleParameters);
+        if (res.ok.answerType == "conceptRows" && res.ok.query != null) {
+            let converter = new StudioConverter(this.graph, res.ok.query.structure, true, this.structureParameters, this.styleParameters);
             let logicalGraph = constructGraphFromRowsResult(res.ok); // In memory, not visualised
             convertLogicalGraphWith(logicalGraph, converter);
         }

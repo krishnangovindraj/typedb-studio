@@ -1,7 +1,7 @@
 import {
     Attribute, AttributeType,
     Concept,
-    EdgeKind, Entity, EntityType,
+    Entity, EntityType,
     InstantiableType, Relation, RelationType,
     RoleType,
     ThingKind,
@@ -214,12 +214,6 @@ export function constructGraphFromRowsResult(rows_result: ConceptRowsQueryRespon
     return new LogicalGraphBuilder().build(rows_result);
 }
 
-function is_branch_involved(provenanceBitArray: Array<number>, branchIndex: number) {
-    let provenanceByteIndex = branchIndex >> 3; // divide by 8
-    let provenanceBitWithinByte = (1 << (branchIndex % 8));
-    return 0 == branchIndex || 0 != (provenanceBitArray[provenanceByteIndex] & provenanceBitWithinByte)
-}
-
 class LogicalGraphBuilder {
     constructor() {
     }
@@ -228,7 +222,7 @@ class LogicalGraphBuilder {
         let answers: DataConstraintAny[][] = [];
         rows_result.answers.forEach((row, answerIndex) => {
             let current_answer_edges = row.involvedBlocks.flatMap(branchIndex => {
-                return rows_result.queryStructure!.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
+                return rows_result.query!.structure.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
                     return this.toDataConstraint(answerIndex, constraint, row.data, {
                         branch: branchIndex,
                         constraint: constraintIndex
@@ -243,7 +237,17 @@ class LogicalGraphBuilder {
     translate_vertex(structure_vertex: QueryVertex, answerIndex: number, data: ConceptRow): DataVertex {
         switch (structure_vertex.tag) {
             case "variable": {
-                return data[structure_vertex.variable] as Concept;
+                if (structure_vertex.inAnswer) {
+                    return data[structure_vertex.name] as Concept;
+                } else {
+                    let key = "unavailable[" + structure_vertex.name + "]";
+                    return {
+                        kind: "unavailable",
+                        vertex_map_key: key,
+                        answerIndex: answerIndex,
+                        variable: structure_vertex.name
+                    } as VertexUnavailable;
+                }
             }
             case "label": {
                 let vertex = structure_vertex.type;
@@ -251,15 +255,6 @@ class LogicalGraphBuilder {
             }
             case "value": {
                 return structure_vertex.value;
-            }
-            case "unavailableVariable": {
-                let key = "unavailable[" + structure_vertex.variable + "][" + answerIndex + "]";
-                return {
-                    kind: "unavailable",
-                    vertex_map_key: key,
-                    answerIndex: answerIndex,
-                    variable: structure_vertex.variable
-                } as VertexUnavailable;
             }
             default: {
                 throw new Error("Unsupported vertex type: " + structure_vertex);
