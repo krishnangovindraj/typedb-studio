@@ -130,6 +130,9 @@ export class GraphVisualiser {
                         constraint.arguments.map(arg => shouldCreateNode(arg)).reduce((a,b) => a || b, false)
                         || constraint.assigned.map(assigned => shouldCreateNode(assigned)).reduce((a,b) => a || b, false)
                     );
+                case "comparison": return false;
+                case "is": return false;
+                case "iid": return false;
             }
         }
         let spans: number[][] = [];

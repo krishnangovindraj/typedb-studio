@@ -32,7 +32,8 @@ export type QueryStructure = { blocks: { constraints: QueryConstraintAny[] }[] }
 
 export type QueryConstraintAny = QueryConstraintIsa | QueryConstraintIsaExact | QueryConstraintHas | QueryConstraintLinks |
     QueryConstraintSub | QueryConstraintSubExact | QueryConstraintOwns | QueryConstraintRelates | QueryConstraintPlays |
-    QueryConstraintExpression | QueryConstraintFunction;
+    QueryConstraintExpression | QueryConstraintFunction | QueryConstraintComparison |
+    QueryConstraintIs | QueryConstraintIid;
 
 export type QueryConstraintSpan = { begin: number, end: number };
 
@@ -129,4 +130,29 @@ export interface QueryConstraintFunction {
     name: string,
     arguments: QueryVertexVariable[],
     assigned: QueryVertexVariable[],
+}
+
+export interface QueryConstraintComparison {
+    tag: "comparison",
+    textSpan: QueryConstraintSpan,
+
+    lhs: QueryVertexVariable | QueryVertexValue,
+    rhs: QueryVertexVariable | QueryVertexValue,
+    comparator: string,
+}
+
+export interface QueryConstraintIs {
+    tag: "is",
+    textSpan: QueryConstraintSpan,
+
+    lhs: QueryVertexVariable,
+    rhs: QueryVertexVariable,
+}
+
+export interface QueryConstraintIid {
+    tag: "iid",
+    textSpan: QueryConstraintSpan,
+
+    variable: QueryVertexVariable,
+    iid: string,
 }

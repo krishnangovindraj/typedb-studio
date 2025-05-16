@@ -108,8 +108,8 @@ function putConstraint(converter: ILogicalGraphConverter, answer_index: number, 
       converter.put_function(answer_index, constraint);
       break;
     }
-    default: {
-      throw new Error();
-    }
+    case "comparison": break;
+    case "is": break;
+    case "iid": break;
   }
 }

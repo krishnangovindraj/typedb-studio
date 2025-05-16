@@ -10,10 +10,10 @@ import {
     ValueKind
 } from "../typedb-driver/concept";
 import {
-    QueryConstraintAny,
+    QueryConstraintAny, QueryConstraintComparison,
     QueryConstraintExpression,
     QueryConstraintFunction,
-    QueryConstraintHas,
+    QueryConstraintHas, QueryConstraintIid, QueryConstraintIs,
     QueryConstraintIsa,
     QueryConstraintIsaExact,
     QueryConstraintLinks,
@@ -49,7 +49,8 @@ export type DataGraph = {
 
 export type DataConstraintAny = DataConstraintIsa | DataConstraintIsaExact | DataConstraintHas | DataConstraintLinks |
     DataConstraintSub | DataConstraintSubExact | DataConstraintOwns | DataConstraintRelates | DataConstraintPlays |
-    DataConstraintExpression | DataConstraintFunction;
+    DataConstraintExpression | DataConstraintFunction | DataConstraintComparison |
+    DataConstraintIs | DataConstraintIid;
 
 export type DataConstraintSpan = QueryConstraintSpan;
 
@@ -170,6 +171,37 @@ export interface DataConstraintFunction {
     assigned: (Entity | Relation | Attribute | Value | VertexUnavailable)[],
 }
 
+export interface DataConstraintComparison {
+    tag: "comparison",
+    textSpan: DataConstraintSpan,
+    queryCoordinates: QueryCoordinates,
+    queryConstraint: QueryConstraintComparison,
+
+    lhs: Value | Attribute | VertexUnavailable,
+    rhs: Value | Attribute | VertexUnavailable,
+    comparator: string,
+}
+
+export interface DataConstraintIs {
+    tag: "is",
+    textSpan: DataConstraintSpan,
+    queryCoordinates: QueryCoordinates,
+    queryConstraint: QueryConstraintIs,
+
+    lhs: Concept | VertexUnavailable,
+    rhs: Concept | VertexUnavailable,
+}
+
+export interface DataConstraintIid {
+    tag: "iid",
+    textSpan: DataConstraintSpan,
+    queryCoordinates: QueryCoordinates,
+    queryConstraint: QueryConstraintIid,
+
+    variable: Concept | VertexUnavailable,
+    iid: string,
+}
+
 export interface VertexMetadata {
     defaultLabel: string;
     hoverLabel: string;
@@ -255,9 +287,6 @@ class LogicalGraphBuilder {
             }
             case "value": {
                 return structure_vertex.value;
-            }
-            default: {
-                throw new Error("Unsupported vertex type: " + structure_vertex);
             }
         }
     }
@@ -388,9 +417,39 @@ class LogicalGraphBuilder {
                     assigned: constraint.assigned.map(vertex => this.translate_vertex(vertex, answerIndex, data) as (Entity | Relation | Attribute | Value | VertexUnavailable)),
                 }
             }
-            default: {
-                console.log("Unsupported Constraint:" + constraint)
-                throw new Error("Unsupported Constraint:" + constraint);
+            case "comparison" : {
+                return  {
+                    tag: "comparison",
+                    textSpan: constraint.textSpan,
+                    queryCoordinates: coordinates,
+                    queryConstraint: constraint,
+
+                    lhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
+                    rhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Value | Attribute | VertexUnavailable),
+                    comparator: constraint.comparator,
+                }
+            }
+            case "is" : {
+                return {
+                    tag: "is",
+                    textSpan: constraint.textSpan,
+                    queryCoordinates: coordinates,
+                    queryConstraint: constraint,
+
+                    lhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
+                    rhs: this.translate_vertex(constraint.lhs, answerIndex, data) as (Concept | VertexUnavailable),
+                }
+            }
+            case "iid" : {
+                return {
+                    tag: "iid",
+                    textSpan: constraint.textSpan,
+                    queryCoordinates: coordinates,
+                    queryConstraint: constraint,
+
+                    variable: this.translate_vertex(constraint.variable, answerIndex, data) as (Concept | VertexUnavailable),
+                    iid: constraint.iid,
+                }
             }
         }
     }
