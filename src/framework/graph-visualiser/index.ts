@@ -135,6 +135,8 @@ export class GraphVisualiser {
                 case "comparison": return false;
                 case "is": return false;
                 case "iid": return false;
+                case "kind": return false;
+                case "label": return false;
             }
         }
         let spans: number[][] = [];

@@ -5,7 +5,6 @@
  */
 
 import {Type, Value} from "./concept";
-import {QueryType} from "./response";
 
 export type QueryVertexKind = "variable" | "label" | "value";
 
@@ -42,7 +41,7 @@ export type QueryVariableInfo = { name: string | null };
 export type QueryConstraintAny = QueryConstraintIsa | QueryConstraintIsaExact | QueryConstraintHas | QueryConstraintLinks |
     QueryConstraintSub | QueryConstraintSubExact | QueryConstraintOwns | QueryConstraintRelates | QueryConstraintPlays |
     QueryConstraintExpression | QueryConstraintFunction | QueryConstraintComparison |
-    QueryConstraintIs | QueryConstraintIid;
+    QueryConstraintIs | QueryConstraintIid | QueryConstraintKind | QueryConstraintLabel;
 
 export type QueryConstraintSpan = { begin: number, end: number };
 
@@ -162,6 +161,22 @@ export interface QueryConstraintIid {
     tag: "iid",
     textSpan: QueryConstraintSpan,
 
-    variable: QueryVertexVariable,
+    concept: QueryVertexVariable,
     iid: string,
+}
+
+export interface QueryConstraintLabel {
+    tag: "label",
+    textSpan: QueryConstraintSpan,
+
+    type: QueryVertexVariable,
+    label: string,
+}
+
+export interface QueryConstraintKind {
+    tag: "kind",
+    textSpan: QueryConstraintSpan,
+
+    type: QueryVertexVariable,
+    kind: string,
 }

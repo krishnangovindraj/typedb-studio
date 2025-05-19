@@ -111,5 +111,7 @@ function putConstraint(converter: ILogicalGraphConverter, answer_index: number, 
     case "comparison": break;
     case "is": break;
     case "iid": break;
+    case "label": break;
+    case "kind": break;
   }
 }

@@ -16,7 +16,7 @@ import {
     QueryConstraintFunction,
     QueryConstraintHas, QueryConstraintIid, QueryConstraintIs,
     QueryConstraintIsa,
-    QueryConstraintIsaExact,
+    QueryConstraintIsaExact, QueryConstraintKind, QueryConstraintLabel,
     QueryConstraintLinks,
     QueryConstraintOwns,
     QueryConstraintPlays,
@@ -51,7 +51,7 @@ export type DataGraph = {
 export type DataConstraintAny = DataConstraintIsa | DataConstraintIsaExact | DataConstraintHas | DataConstraintLinks |
     DataConstraintSub | DataConstraintSubExact | DataConstraintOwns | DataConstraintRelates | DataConstraintPlays |
     DataConstraintExpression | DataConstraintFunction | DataConstraintComparison |
-    DataConstraintIs | DataConstraintIid;
+    DataConstraintIs | DataConstraintIid | DataConstraintLabel | DataConstraintKind;
 
 export type DataConstraintSpan = QueryConstraintSpan;
 
@@ -199,8 +199,29 @@ export interface DataConstraintIid {
     queryCoordinates: QueryCoordinates,
     queryConstraint: QueryConstraintIid,
 
-    variable: Concept | VertexUnavailable,
+    concept: Concept | VertexUnavailable,
     iid: string,
+}
+
+export interface DataConstraintLabel {
+    tag: "label",
+    textSpan: DataConstraintSpan,
+    queryCoordinates: QueryCoordinates,
+    queryConstraint: QueryConstraintLabel,
+
+    type: Type | VertexUnavailable,
+    label: string,
+}
+
+export interface DataConstraintKind {
+    tag: "kind",
+    textSpan: DataConstraintSpan,
+    queryCoordinates: QueryCoordinates,
+    queryConstraint: QueryConstraintKind,
+
+    kind: string,
+    type: Type | VertexUnavailable,
+
 }
 
 export interface VertexMetadata {
@@ -450,8 +471,30 @@ class LogicalGraphBuilder {
                     queryCoordinates: coordinates,
                     queryConstraint: constraint,
 
-                    variable: this.translate_vertex(structure, constraint.variable, answerIndex, data) as (Concept | VertexUnavailable),
+                    concept: this.translate_vertex(structure, constraint.concept, answerIndex, data) as (Concept | VertexUnavailable),
                     iid: constraint.iid,
+                }
+            }
+            case "label" : {
+                return {
+                    tag: "label",
+                    textSpan: constraint.textSpan,
+                    queryCoordinates: coordinates,
+                    queryConstraint: constraint,
+
+                    type: this.translate_vertex(structure, constraint.type, answerIndex, data) as (Type | VertexUnavailable),
+                    label: constraint.label,
+                }
+            }
+            case "kind" : {
+                return {
+                    tag: "kind",
+                    textSpan: constraint.textSpan,
+                    queryCoordinates: coordinates,
+                    queryConstraint: constraint,
+
+                    type: this.translate_vertex(structure, constraint.type, answerIndex, data) as (Type | VertexUnavailable),
+                    kind: constraint.kind,
                 }
             }
         }
