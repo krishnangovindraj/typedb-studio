@@ -255,8 +255,8 @@ class LogicalGraphBuilder {
         let answers: DataConstraintAny[][] = [];
         rows_result.answers.forEach((row, answerIndex) => {
             let current_answer_edges = row.involvedBlocks.flatMap(branchIndex => {
-                return rows_result.query!.structure.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
-                    return this.toDataConstraint(rows_result.query!.structure, answerIndex, constraint, row.data, {
+                return rows_result.query!.blocks[branchIndex].constraints.map((constraint, constraintIndex) => {
+                    return this.toDataConstraint(rows_result.query!, answerIndex, constraint, row.data, {
                         branch: branchIndex,
                         constraint: constraintIndex
                     });

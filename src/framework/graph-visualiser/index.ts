@@ -49,7 +49,7 @@ export class GraphVisualiser {
         if (isApiErrorResponse(res)) return;
 
         if (res.ok.answerType == "conceptRows" && res.ok.query != null) {
-            let converter = new StudioConverter(this.graph, res.ok.query.structure, false, this.structureParameters, this.styleParameters);
+            let converter = new StudioConverter(this.graph, res.ok.query, false, this.structureParameters, this.styleParameters);
             let logicalGraph = constructGraphFromRowsResult(res.ok); // In memory, not visualised
             this.graph.clear();
             convertLogicalGraphWith(logicalGraph, converter);
@@ -60,7 +60,7 @@ export class GraphVisualiser {
         if (isApiErrorResponse(res)) return;
 
         if (res.ok.answerType == "conceptRows" && res.ok.query != null) {
-            let converter = new StudioConverter(this.graph, res.ok.query.structure, true, this.structureParameters, this.styleParameters);
+            let converter = new StudioConverter(this.graph, res.ok.query, true, this.structureParameters, this.styleParameters);
             let logicalGraph = constructGraphFromRowsResult(res.ok); // In memory, not visualised
             convertLogicalGraphWith(logicalGraph, converter);
         }

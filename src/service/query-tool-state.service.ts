@@ -223,12 +223,12 @@ export class LogOutputState {
 
         switch (res.ok.answerType) {
             case "ok": {
-                this.appendLines(`Finished ${res.ok.query.type} query.`);
+                this.appendLines(`Finished ${res.ok.query_type} query.`);
                 break;
             }
             case "conceptRows": {
-                this.appendLines(`Finished ${res.ok.query.type} query compilation and validation...`);
-                if (res.ok.query.type === "write") this.appendLines(`Finished writes. Printing rows...`);
+                this.appendLines(`Finished ${res.ok.query_type} query compilation and validation...`);
+                if (res.ok.query_type === "write") this.appendLines(`Finished writes. Printing rows...`);
                 else this.appendLines(`Printing rows...`);
 
                 if (res.ok.answers.length) {
@@ -242,8 +242,8 @@ export class LogOutputState {
                 break;
             }
             case "conceptDocuments": {
-                this.appendLines(`Finished ${res.ok.query.type} query compilation and validation...`);
-                if (res.ok.query.type === "write") this.appendLines(`Finished writes. Printing documents...`);
+                this.appendLines(`Finished ${res.ok.query_type} query compilation and validation...`);
+                if (res.ok.query_type === "write") this.appendLines(`Finished writes. Printing documents...`);
                 else this.appendLines(`Printing documents...`);
                 res.ok.answers.forEach(x => this.appendConceptDocument(x));
                 this.appendLines(`Finished. Total documents: ${res.ok.answers.length}`);
@@ -447,7 +447,7 @@ export class GraphOutputState {
                 this.visualiser.handleQueryResponse(res, this.database!);
                 let highlightedQuery = "";
                 if (res.ok.query) {
-                    highlightedQuery = this.visualiser.colorQuery(this.query!, res.ok.query.structure);
+                    highlightedQuery = this.visualiser.colorQuery(this.query!, res.ok.query);
                 }
                 this.visualiser.colorEdgesByConstraintIndex(false);
                 this.status = "ok";

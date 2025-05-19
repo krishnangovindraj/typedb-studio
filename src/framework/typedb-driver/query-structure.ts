@@ -5,6 +5,7 @@
  */
 
 import {Type, Value} from "./concept";
+import {QueryType} from "./response";
 
 export type QueryVertexKind = "variable" | "label" | "value";
 
@@ -28,12 +29,12 @@ export type QueryVertex = QueryVertexVariable | QueryVertexLabel | QueryVertexVa
 // export enum VertexKindOther = { }
 export type QueryStructure = {
     blocks: { constraints: QueryConstraintAny[] }[],
-    variableInfo: {[name: string]: QueryVariableInfo },
-    outputVariables: string[],
+    variables: {[name: string]: QueryVariableInfo },
+    outputs: string[],
 };
 
 export function get_variable_name(structure: QueryStructure, variable: QueryVertexVariable) : string | null {
-    return structure.variableInfo[variable.id]?.name;
+    return structure.variables[variable.id]?.name;
 }
 
 export type QueryVariableInfo = { name: string | null };

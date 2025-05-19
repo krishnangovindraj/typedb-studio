@@ -255,7 +255,7 @@ export class StudioConverter implements ILogicalGraphConverter {
 export function shouldCreateNode(structure: QueryStructure, vertex: QueryVertexOrSpecial) {
     return !(
         (vertex.tag === "label" ||
-            (vertex.tag == "variable" && !structure.outputVariables.includes(vertex.id))
+            (vertex.tag == "variable" && !structure.outputs.includes(vertex.id))
         )
     );
 }
